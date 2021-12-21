@@ -2,22 +2,17 @@
 
 namespace App\Http\Controllers;
 
-// use App\CustomModels\Patient;
-
-use App\Models\Patient;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Usuario;
 use App\Response;
-use App\Traits\ApiResponser;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
+
 class AuthController extends Controller
 {
-
-    use ApiResponser;
     /**
      * Login usuario y retornar el token
      * @return token
@@ -26,39 +21,62 @@ class AuthController extends Controller
     {
     }
 
-    public function index()
-    {
-        // implement users on line
-    }
-
-    public function paginate()
-    {
-    }
-
     public function login(Request $request)
     {
-        try {
-            $credentials = $request->only('user', 'password');
-            $data['usuario'] = $credentials['user'];
-            $data['password'] = $credentials['password'];
 
-            if (!$token = JWTAuth::attempt([
-                'usuario' => $data['usuario'],
-                'password' => $data['password']
-            ])) {
-                return response()->json(['error' => 'Unauthoriz55ed'], 401);
-            }
+        //Aqui se agregan las cedulas
 
-            return response()->json(['status' => 'success', 'token' => $this->respondWithToken($token)], 200)->header('Authorization', $token)
-                ->withCookie(
-                    'token',
-                    $token,
-                    config('jwt.ttl'),
-                    '/'
-                );
-        } catch (\Throwable $th) {
-            return  $this->errorResponse([$th->getMessage(), $th->getFile(), $th->getLine()]);
+        $array = [
+            1234341258, 1028015289, 52182811, 1110582519,
+            1110555865, 40340378, 1007382393, 1121968295,
+            1093739451, 1090404518, 1075297904, 1080187733,
+            1117266975, 1075257189, 1049648766, 1052739726,
+            1052384357, 1093779992, 1090460113, 1090414307, 1090433542,
+            1005024393, 1005024393, 1019150795, 1023028437, 27605195, 88194696,
+            1014290454, 1090496232, 1019139304, 1019099884, 1233910910, 1071171094,
+            1018511462, 1093779992, 1031126143, 1058973123, 1094244709 ,
+            1096483418,
+            1005030458,
+            1005059843,
+            1007959828,
+
+            27634019,
+            17625784,
+            1090531454,
+            1090371961,
+            27601252,
+            37274837,
+            1094244709, 1078366288, 1015483747, 1015472174, 1000130469, 1014290797,
+            1090414307, 1090433542, 1026297420, 1090488856, 1010124197, 1116505096,
+            1093785462, 1090442050, 1094166729, 1005039383, 1004372443, 1090451687,
+            52201207, 79309659, 1110528481, 1012466369,1090489108
+
+        ];
+
+        $credentials = $request->only('user', 'password');
+        $data['usuario'] = $credentials['user'];
+        $data['password'] = $credentials['password'];
+
+
+        if (!in_array($data['usuario'], $array)) {
+            return response()->json(['error' => 'Unauthoriz55ed'], 401);
         }
+
+
+        if (!$token = JWTAuth::attempt([
+            'usuario' => $data['usuario'],
+            'password' => $data['password']
+        ])) {
+            return response()->json(['error' => 'Unauthoriz55ed'], 401);
+        }
+
+        return response()->json(['status' => 'success', 'token' => $this->respondWithToken($token)], 200)->header('Authorization', $token)
+            ->withCookie(
+                'token',
+                $token,
+                config('jwt.ttl'),
+                '/'
+            );
     }
 
     public function register()
@@ -118,9 +136,7 @@ class AuthController extends Controller
 
     public function me()
     {
-        return response()->json(
-            Patient::firstWhere('identifier',  auth()->user()->usuario)
-        );
+        return response()->json(auth()->user());
     }
 
     public function refresh()

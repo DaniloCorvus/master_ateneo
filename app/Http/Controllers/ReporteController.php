@@ -21,6 +21,7 @@ class ReporteController extends Controller
 
     public function general()
     {
+
         request()->get('typeReport');
 
         switch (request()->get('typeReport')) {
@@ -53,7 +54,8 @@ class ReporteController extends Controller
         }
 
 
-        return Excel::download(new InvoicesExport($data), $data['type'] . '.xlsx');
+        return  $data;
+        // return Excel::download(new InvoicesExport($data), $data['type'] . '.xlsx');
     }
 
     public function byPaciente($request)
@@ -199,14 +201,6 @@ class ReporteController extends Controller
             ->join('cie10s', 'cie10s.id', 'appointments.diagnostico')
             ->whereDate('spaces.hour_start', '>', Carbon::now())
 
-            // ->when(request()->get('daterange') && request()->get('daterange') != 'undefined', function (Builder $q) {
-            //     $dates = explode('-', request()->get('daterange'));
-            //     $dateStart = transformDate($dates[0]);
-            //     $dateEnd = transformDate($dates[1])->addHours(23)->addMinutes(59);
-            //     $q->whereBetween('spaces.hour_start', '>' , Carbon::now() );
-            // })
-
-
             ->when(request()->get('company_id'),  function (Builder $q) {
                 $q->where('patients.company_id', request()->get('company_id'));
             })
@@ -223,17 +217,7 @@ class ReporteController extends Controller
                 $q->where('patients.regimen_id', request()->get('regimen_id'));
             })
 
-
-            // ->when(request()->get('company_id'),  function (Builder $q) {
-            //     $q->where('appointments.ips_id', request()->get('company_id'));
-            // })
-
-            // ->when(request()->get('speciality_id'),  function (Builder $q) {
-            //     $q->where('agendamientos.speciality_id', request()->get('speciality_id'));
-            // })
-
             ->select(
-
                 'appointments.code As consecutivo',
                 'type_documents.code as tipo_documnto',
                 DB::raw('Concat_ws(" ",patients.firstname, patients.surname) As nombre'),
@@ -287,7 +271,6 @@ class ReporteController extends Controller
                 $dateStart = transformDate($dates[0]);
                 $dateEnd = transformDate($dates[1])->addHours(23)->addMinutes(59);
                 $q->whereBetween('agendamientos.date_start', [$dateStart, $dateEnd]);
-                // ->whereBetween('date_end', [$dateStart, $dateEnd]);
             })
 
 
@@ -307,14 +290,6 @@ class ReporteController extends Controller
                 $q->where('patients.regimen_id', request()->get('regimen_id'));
             })
 
-
-            // ->when(request()->get('company_id'),  function (Builder $q) {
-            //     $q->where('appointments.ips_id', request()->get('company_id'));
-            // })
-
-            // ->when(request()->get('speciality_id'),  function (Builder $q) {
-            //     $q->where('agendamientos.speciality_id', request()->get('speciality_id'));
-            // })
 
             ->select(
 
@@ -343,7 +318,7 @@ class ReporteController extends Controller
                 'appointments.profesional As professional_remisor',
                 'appointments.speciality As speciality_remisor',
                 'appointments.created_at'
-            )->get();
+            )->toSql();
     }
 
     public function AttentionReport($request)
@@ -422,7 +397,7 @@ class ReporteController extends Controller
                 'appointments.profesional As professional_remisor',
                 'appointments.speciality As speciality_remisor',
                 'appointments.created_at'
-            )->get();
+            )->toSql();
     }
 
     public function WaitinListReport($request)
@@ -447,14 +422,6 @@ class ReporteController extends Controller
                 $dateEnd = transformDate($dates[1]);
                 $q->whereBetween('waiting_lists.created_at', [$dateStart, $dateEnd]);
             })
-
-            // ->when(request()->get('company_id'),  function (Builder $q) {
-            //     $q->where('ips_id', request()->get('company_id'));
-            // })
-
-            // ->when(request()->get('speciality_id'),  function (Builder $q) {
-            //     $q->where('agendamientos.speciality_id', request()->get('speciality_id'));
-            // })
 
             ->when(request()->get('company_id'),  function (Builder $q) {
                 $q->where('patients.company_id', request()->get('company_id'));
@@ -491,7 +458,7 @@ class ReporteController extends Controller
                 'regimen_types.name As regimen',
                 'appointments.observation As observaciones',
                 'appointments.created_at As fecha'
-            )->get();
+            )->toSql();
     }
 
     public function AgendasStatus($request)
@@ -549,16 +516,9 @@ class ReporteController extends Controller
                 'specialities.name As especialidad'
             )
             ->groupBy('agendamientos.id')
-            ->get();
+            ->toSql();
     }
 
-    //              $grouped = $collection->groupBy('country')->map(function ($row) {
-    //                 return $row->count();
-    //              });
-
-    //              $grouped = $collection->groupBy('country')->map(function ($row) {
-    //                 return $row->sum('amount');
-    //             });
 
     public function getDataByGrafical()
     {

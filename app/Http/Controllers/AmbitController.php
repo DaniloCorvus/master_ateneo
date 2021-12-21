@@ -13,6 +13,6 @@ class AmbitController extends Controller
 	//
 	public function index()
 	{
-		return $this->success(Ambit::all());
+		return $this->success(Ambit::get(['id', 'name']));
 	}
 }
